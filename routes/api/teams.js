@@ -32,8 +32,6 @@ router.post('/',
             // This might be redundant
             const league = await League.findById(req.body.league);
 
-            console.log(league);
-
             const newTeam = new Team({
                 name: req.body.name,
                 league: league.id,
