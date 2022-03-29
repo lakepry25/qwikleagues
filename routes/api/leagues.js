@@ -5,7 +5,6 @@ const League = require('../../models/League');
 const { check, validationResult } = require('express-validator');
 const auth = require('../../middleware/auth');
 
-
 // @route GET api/leagues
 // @desc Get all leagues
 // @access Public
