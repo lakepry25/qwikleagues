@@ -6,6 +6,19 @@ const { check, validationResult } = require('express-validator');
 const auth = require('../../middleware/auth');
 
 
+// @route GET api/leagues
+// @desc Get all leagues
+// @access Public
+router.get('/', async (req, res) => {
+    try {
+        const leagues = await League.find().sort({ date: -1 });
+        res.json({ leagues: leagues });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 // @route POST api/leagues
 // @desc Create a league
 // @access Private
