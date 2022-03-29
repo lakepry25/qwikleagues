@@ -1,3 +1,4 @@
 {
-    "mongoURI": "mongodb+srv://lakep:lap6056*@cluster0.1evkh.mongodb.net/qwikleaguesDB?retryWrites=true&w=majority"
+    "mongoURI": "mongodb+srv://lakep:lap6056*@cluster0.1evkh.mongodb.net/qwikleaguesDB?retryWrites=true&w=majority",
+    "jwtSecret": "mysecrettoken"
 }
