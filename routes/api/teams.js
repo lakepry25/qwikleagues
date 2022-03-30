@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Team = require('../../models/Team');
 const League = require('../../models/League');
+const User = require('../../models/User');
 const { check, validationResult } = require('express-validator');
 const auth = require('../../middleware/auth');
 
@@ -61,9 +62,32 @@ router.post('/',
     }
 );
 
-// @route GET api/teams
-// @desc Test Route
-// @access Public
-router.get('/', (req, res) => res.send('Team Route'));
+// @route PUT api/teams/:id
+// @desc Join a team
+// @access Private
+router.put('/:id', auth, async (req, res) => {
+    try {
+
+        const team = await Team.findById(req.params.id);
+        
+        if (!team) {
+            return res.status(404).json({ msg: 'Team not found' });
+        }
+
+        // Check if user is already on the team
+        if (team.roster.filter(player => player.playerID === req.user.id).length > 0) {
+            return res.status(400).json({ msg: 'User already on team'});
+        }
+
+        team.roster.push({ playerID: req.user.id });
+
+        await team.save();
+
+        res.json(team.roster);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
 
 module.exports = router;

@@ -37,7 +37,6 @@ router.post('/',
         }
 
         try {
-            // const user = await User.findById(req.user.id).select('-password');
             console.log(req.body.name);
 
             const newLeague = new League({
@@ -54,10 +53,5 @@ router.post('/',
         
     }
 );
-
-// @route GET api/teams
-// @desc Test Route
-// @access Public
-router.get('/', (req, res) => res.send('League Route'));
 
 module.exports = router;
