@@ -62,10 +62,10 @@ router.post('/',
     }
 );
 
-// @route PUT api/teams/:id
+// @route PUT api/teams/join/:id
 // @desc Join a team
 // @access Private
-router.put('/:id', auth, async (req, res) => {
+router.put('/join/:id', auth, async (req, res) => {
     try {
 
         const team = await Team.findById(req.params.id);
@@ -89,5 +89,38 @@ router.put('/:id', auth, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
+// @route PUT api/teams/join/:id
+// @desc Join a team
+// @access Private
+router.put('/leave/:id', auth, async (req, res) => {
+    try {
+
+        const team = await Team.findById(req.params.id);
+        
+        if (!team) {
+            return res.status(404).json({ msg: 'Team not found' });
+        }
+
+        // Check if user is already on the team
+        if (team.roster.filter(player => player.playerID === req.user.id).length === 0) {
+            return res.status(400).json({ msg: 'User not on this team'});
+        }
+
+
+        // Get remove index
+        const removeIndex = team.roster.map(player => player.playerID.toString()).indexOf(req.user.id);
+
+        team.roster.splice(removeIndex, 1);
+
+        await team.save();
+
+        res.json(team.roster);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 
 module.exports = router;
