@@ -21,15 +21,15 @@ router.get('/', async (req, res) => {
 });
 
 // @route GET api/teams/:id
-// @desc Get post by ID
+// @desc Get team by ID
 // @access Private
 router.get('/:id', auth, async (req, res) => {
     try {
-        const post = await Team.findById(req.params.id);
+        const team = await Team.findById(req.params.id);
 
-        //check if post with id
+        //check if not team
         if (!team) {
-            return res.status(404).json({ msg: 'Post not found' });
+            return res.status(404).json({ msg: 'Team not found' });
         }
 
         res.json(team);
@@ -37,7 +37,7 @@ router.get('/:id', auth, async (req, res) => {
         console.error(err.message);
 
         if (!err.kind ==='ObjectId') {
-            return res.status(404).json({ msg: 'Post not found' });
+            return res.status(404).json({ msg: 'Team not found' });
         }
 
         res.status(500).send('Server Error');
@@ -69,6 +69,24 @@ router.post('/',
 
             // This might be redundant
             const league = await League.findById(req.body.league);
+            const teams = await Team.find({"league": req.body.league});
+
+            // Check to make sure the team name hasn't been used
+            if (teams.filter(team => team.name === req.body.name).length > 0) {
+                return res.status(400).json({ msg: 'Team name already in use for this league'});
+            }
+
+            let userIsOnTeam = false;
+            // Check to make sure that this user creating the team is not already on the team
+            teams.forEach(team => {
+                if (team.roster.filter(player => player.playerID === req.user.id).length > 0) {
+                    userIsOnTeam = true;
+                }
+            });
+
+            if (userIsOnTeam) {
+                return res.status(400).json({ msg: "User already on team in this league"});
+            }
 
             const newTeam = new Team({
                 name: req.body.name,
@@ -154,9 +172,6 @@ router.put('/kick/:id/:player', auth, async (req, res) => {
 
         const team = await Team.findById(req.params.id);
         const playerToRemove = await User.findById(req.params.player);
-        const requestUser = await User.findById(req.user.id);
-
-        const coach = await User.findById(team.coach);
         
         if (!team) {
             return res.status(404).json({ msg: 'Team not found' });
@@ -166,12 +181,8 @@ router.put('/kick/:id/:player', auth, async (req, res) => {
             return res.status(404).json({ msg: 'Player not found' });
         }
 
-        if (!requestUser){
-            return res.status(404).json({ msg: 'User making request not found' });
-        }
-
         // Check if user making request is coach
-        if (coach.id !== requestUser.id){
+        if (team.coach.toString() !== req.user.id){
             return res.status(404).json({ msg: 'User is not coach of team'});
         }
 
@@ -190,6 +201,38 @@ router.put('/kick/:id/:player', auth, async (req, res) => {
         res.json(team.roster);
     } catch (err) {
         console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route DELETE api/teams/:id
+// @desc Delete/Remove a Team
+// @access Private
+router.delete('/:id', auth, async (req, res) => {
+    try {
+        const team = await Team.findById(req.params.id);
+        const league = await League.findById(team.id);
+
+        if (!team) {
+            return res.status(404).json({ msg: 'Team not found' });
+        }
+
+        // Check user
+        if(team.coach.toString() !== req.user.id && league.organizer.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'User not authorized' });
+        }
+
+        await team.remove();
+        
+
+        res.json({ msg: 'Team removed' });
+    } catch (err) {
+        console.error(err.message);
+
+        if (!err.kind ==='ObjectId') {
+            return res.status(404).json({ msg: 'Team not found' });
+        }
+
         res.status(500).send('Server Error');
     }
 });

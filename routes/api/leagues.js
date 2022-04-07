@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const League = require('../../models/League');
+const Team = require('../../models/Team');
+const User = require('../../models/User');
 // const User = require('../../models/User');
 const { check, validationResult } = require('express-validator');
 const auth = require('../../middleware/auth');
@@ -37,8 +39,6 @@ router.post('/',
         }
 
         try {
-            console.log(req.body.name);
-
             const newLeague = new League({
                 name: req.body.name,
                 organizer: req.user.id
@@ -53,5 +53,7 @@ router.post('/',
         
     }
 );
+
+
 
 module.exports = router;

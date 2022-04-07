@@ -9,14 +9,6 @@ const LeagueSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'users'
     },
-    teams: [
-        {
-            player: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'teams'
-            }
-        }
-    ],
     settings: {
         
         startDate: {
