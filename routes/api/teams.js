@@ -20,6 +20,30 @@ router.get('/', async (req, res) => {
     }
 });
 
+// @route GET api/teams/:id
+// @desc Get post by ID
+// @access Private
+router.get('/:id', auth, async (req, res) => {
+    try {
+        const post = await Team.findById(req.params.id);
+
+        //check if post with id
+        if (!team) {
+            return res.status(404).json({ msg: 'Post not found' });
+        }
+
+        res.json(team);
+    } catch (err) {
+        console.error(err.message);
+
+        if (!err.kind ==='ObjectId') {
+            return res.status(404).json({ msg: 'Post not found' });
+        }
+
+        res.status(500).send('Server Error');
+    }
+});
+
 // @route POST api/teams
 // @desc Create a team
 // @access Private
@@ -90,8 +114,8 @@ router.put('/join/:id', auth, async (req, res) => {
     }
 });
 
-// @route PUT api/teams/join/:id
-// @desc Join a team
+// @route PUT api/teams/leave/:id
+// @desc leave a team
 // @access Private
 router.put('/leave/:id', auth, async (req, res) => {
     try {
@@ -110,6 +134,54 @@ router.put('/leave/:id', auth, async (req, res) => {
 
         // Get remove index
         const removeIndex = team.roster.map(player => player.playerID.toString()).indexOf(req.user.id);
+
+        team.roster.splice(removeIndex, 1);
+
+        await team.save();
+
+        res.json(team.roster);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route PUT api/teams/kick/:id/:player
+// @desc Kick player from a team
+// @access Private
+router.put('/kick/:id/:player', auth, async (req, res) => {
+    try {
+
+        const team = await Team.findById(req.params.id);
+        const playerToRemove = await User.findById(req.params.player);
+        const requestUser = await User.findById(req.user.id);
+
+        const coach = await User.findById(team.coach);
+        
+        if (!team) {
+            return res.status(404).json({ msg: 'Team not found' });
+        }
+
+        if (!playerToRemove) {
+            return res.status(404).json({ msg: 'Player not found' });
+        }
+
+        if (!requestUser){
+            return res.status(404).json({ msg: 'User making request not found' });
+        }
+
+        // Check if user making request is coach
+        if (coach.id !== requestUser.id){
+            return res.status(404).json({ msg: 'User is not coach of team'});
+        }
+
+        // Check if user is already on the team
+        if (team.roster.filter(player => player.playerID === playerToRemove.id).length === 0) {
+            return res.status(400).json({ msg: 'User not on this team'});
+        }
+
+        // Get remove index
+        const removeIndex = team.roster.map(player => player.playerID.toString()).indexOf(playerToRemove.id);
 
         team.roster.splice(removeIndex, 1);
 
