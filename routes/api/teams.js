@@ -9,10 +9,10 @@ const auth = require('../../middleware/auth');
 
 // @route GET api/teams
 // @desc Get all teams
-// @access Public
-router.get('/', async (req, res) => {
+// @access Private
+router.get('/', auth, async (req, res) => {
     try {
-        const teams = await Team.find().sort({ date: -1 });
+        const teams = await Team.find();
         res.json({ teams: teams });
     } catch (err) {
         console.error(err.message);
@@ -76,15 +76,15 @@ router.post('/',
                 return res.status(400).json({ msg: 'Team name already in use for this league'});
             }
 
-            let userIsOnTeam = false;
-            // Check to make sure that this user creating the team is not already on the team
+            // **** THIS PROBABLY COULD BE BETTER ****
+            let userOnTeam = false;
             teams.forEach(team => {
                 if (team.roster.filter(player => player.playerID === req.user.id).length > 0) {
-                    userIsOnTeam = true;
+                    userOnTeam = true;
                 }
             });
 
-            if (userIsOnTeam) {
+            if (userOnTeam) {
                 return res.status(400).json({ msg: "User already on team in this league"});
             }
 
@@ -236,6 +236,7 @@ router.delete('/:id', auth, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
 
 
 module.exports = router;

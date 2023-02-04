@@ -3,7 +3,6 @@ const router = express.Router();
 const League = require('../../models/League');
 const Team = require('../../models/Team');
 const User = require('../../models/User');
-// const User = require('../../models/User');
 const { check, validationResult } = require('express-validator');
 const auth = require('../../middleware/auth');
 
@@ -12,7 +11,7 @@ const auth = require('../../middleware/auth');
 // @access Public
 router.get('/', async (req, res) => {
     try {
-        const leagues = await League.find().sort({ date: -1 });
+        const leagues = await League.find();
         res.json({ leagues: leagues });
     } catch (err) {
         console.error(err.message);
@@ -54,6 +53,8 @@ router.post('/',
     }
 );
 
+// Delete a league
+// Update league settings
 
 
 module.exports = router;

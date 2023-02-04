@@ -1,13 +1,20 @@
 const mongoose = require('mongoose');
 
 const GameSchema = new mongoose.Schema({
+    league: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'league',
+        required: true
+    },
     homeTeam: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'teams'
+        ref: 'teams',
+        required: true
     },
     awayTeam: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'teams'
+        ref: 'teams',
+        required: true
     },
     startTime: {
         type: Date,
